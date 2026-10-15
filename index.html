@@ -1,0 +1,414 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<meta name="description" content="A little message, for Glory.">
+<title>Message for Glory</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Kalam:wght@400;700&family=Nunito:ital,wght@0,400;0,600;0,700;1,400&display=swap">
+<style>
+  [hidden]{display:none!important}
+  /* same colored-pencil sketchbook world as the travel proposal */
+  :root{
+    color-scheme: light;
+    --paper:#FBF2E7; --paper-2:#F3E3D2; --card:#FFFDFA;
+    --ink:#4A3A36; --ink-soft:#8C7570;
+    --pink:#F6A9BC; --pink-deep:#D9607E; --pink-soft:#FBD6DF;
+    --blue:#8FB8F0; --blue-deep:#5B84C4; --blue-soft:#D9E6FA;
+    --shadow:rgba(90,50,60,.16);
+    --hand:"Kalam","Comic Sans MS","Segoe Print",cursive;
+    --body:"Nunito","Segoe UI",system-ui,-apple-system,sans-serif;
+    --wobble:255px 18px 225px 18px / 18px 225px 18px 255px;
+  }
+  *{box-sizing:border-box}
+  html,body{height:100%}
+  body{
+    margin:0;background:var(--paper);color:var(--ink);
+    font-family:var(--body);font-size:17px;line-height:1.6;
+    overflow:hidden;-webkit-font-smoothing:antialiased;
+  }
+  h1,h2{font-family:var(--hand);font-weight:700;margin:0;color:var(--pink-deep);text-wrap:balance}
+  .grain{
+    position:fixed;inset:0;pointer-events:none;z-index:0;
+    background:
+      repeating-linear-gradient(115deg,rgba(74,58,54,.028) 0 1px,transparent 1px 4px),
+      repeating-linear-gradient(25deg,rgba(74,58,54,.02) 0 1px,transparent 1px 5px),
+      radial-gradient(120% 90% at 50% 40%,transparent 60%,rgba(120,80,70,.08) 100%);
+  }
+  .sketch-btn{
+    font-family:var(--hand);font-weight:700;font-size:1.3rem;color:var(--ink);
+    background:var(--card);border:2.5px solid var(--ink);border-radius:var(--wobble);
+    padding:10px 34px;min-height:48px;cursor:pointer;box-shadow:4px 4px 0 var(--pink);
+    transition:transform .18s ease,box-shadow .18s ease,background .18s ease;touch-action:manipulation;
+  }
+  .sketch-btn.blue{box-shadow:4px 4px 0 var(--blue)}
+  .sketch-btn:hover{transform:translate(-1px,-1px);box-shadow:6px 6px 0 var(--pink);background:#fff}
+  .sketch-btn.blue:hover{box-shadow:6px 6px 0 var(--blue)}
+  .sketch-btn:active{transform:translate(2px,2px);box-shadow:1px 1px 0 var(--pink)}
+  .sketch-btn:focus-visible,.back:focus-visible{outline:3px dashed var(--pink-deep);outline-offset:4px}
+
+  /* every screen fills the viewport; only one is visible at a time */
+  .screen{
+    position:fixed;inset:0;z-index:1;
+    display:flex;flex-direction:column;align-items:center;justify-content:center;
+    gap:16px;padding:20px 20px;text-align:center;
+    transition:opacity .7s ease,transform .7s cubic-bezier(.2,.8,.2,1);
+  }
+  .screen.gone{opacity:0;transform:scale(.97);pointer-events:none}
+
+  /* floating hearts */
+  .hearts{position:absolute;inset:0;pointer-events:none;overflow:hidden}
+  .heart{position:absolute;opacity:.7;animation:float 7s ease-in-out infinite}
+  .heart svg{width:100%;height:100%;overflow:visible}
+  .heart.blue{color:var(--blue)} .heart.pink{color:var(--pink)}
+  @keyframes float{0%,100%{transform:translateY(0) rotate(-6deg)}50%{transform:translateY(-14px) rotate(6deg)}}
+
+  /* ---------- cover: the "new message" ---------- */
+  .envelope{position:relative;width:96px;height:68px;margin-bottom:6px;animation:bob 3.2s ease-in-out infinite}
+  .envelope svg{width:100%;height:100%;overflow:visible}
+  .envelope .ping{
+    position:absolute;top:-12px;right:-14px;min-width:28px;height:28px;padding:0 8px;
+    display:grid;place-items:center;font-family:var(--hand);font-weight:700;font-size:1rem;
+    color:#fff;background:var(--pink-deep);border:2px solid var(--ink);border-radius:999px;
+    animation:pop 1.8s ease-in-out infinite;
+  }
+  @keyframes bob{0%,100%{transform:translateY(0) rotate(-2deg)}50%{transform:translateY(-8px) rotate(2deg)}}
+  @keyframes pop{0%,100%{transform:scale(1)}50%{transform:scale(1.18)}}
+  .cover h1{font-size:clamp(2.2rem,8.5vw,3.6rem);line-height:1.1}
+  .cover .sub{font-size:1.12rem;color:var(--ink-soft);margin:0 0 10px;max-width:30ch}
+
+  /* ---------- the message: one picture + one page of text, with a Next button ---------- */
+  .stage{
+    position:relative;flex:none;
+    height:min(40dvh,440px);aspect-ratio:1/1;max-width:100%;
+  }
+  .frame{
+    position:absolute;inset:0;margin:auto;
+    background:var(--card);padding:10px;
+    border-radius:8px 12px 7px 14px;
+    box-shadow:0 16px 38px var(--shadow),0 2px 0 rgba(74,58,54,.06);
+    opacity:0;transform:rotate(var(--tilt,-1.2deg)) scale(.94) translateY(16px);
+    transition:opacity .8s ease,transform .9s cubic-bezier(.2,.8,.2,1);
+  }
+  .frame.on{opacity:1;transform:rotate(var(--tilt,-1.2deg))}
+  .frame.out{opacity:0;transform:rotate(var(--tilt,-1.2deg)) scale(1.04) translateY(-10px)}
+  .frame img{display:block;width:100%;height:100%;object-fit:contain;border-radius:3px}
+  .frame::before{
+    content:"";position:absolute;left:50%;top:-12px;width:110px;height:26px;z-index:1;
+    transform:translateX(-50%) rotate(-2deg);
+    background:linear-gradient(90deg,rgba(246,169,188,.85),rgba(246,169,188,.7));
+    border-left:1px dashed rgba(255,255,255,.6);border-right:1px dashed rgba(255,255,255,.6);
+  }
+  .frame.alt{--tilt:1.3deg}
+  .frame.alt::before{background:linear-gradient(90deg,rgba(143,184,240,.8),rgba(143,184,240,.65));transform:translateX(-50%) rotate(2.5deg)}
+
+  .note{
+    width:min(540px,100%);max-height:32dvh;overflow-y:auto;
+    background:var(--card);border:2px solid var(--ink);border-radius:var(--wobble);
+    padding:16px 24px;box-shadow:4px 4px 0 var(--blue-soft);
+    transition:opacity .45s ease,transform .45s ease;
+  }
+  .note.swap{opacity:0;transform:translateY(8px)}
+  .note p{margin:0;white-space:pre-line;font-size:1.04rem;line-height:1.6;text-align:left}
+  .note.big p{font-family:var(--hand);font-size:1.5rem;line-height:1.4;text-align:center;color:var(--ink)}
+  .note.big{padding:20px 24px}
+
+  /* long pages: smaller picture, taller text box, so nothing needs scrolling */
+  .screen.long .stage{height:min(27dvh,360px)}
+  .screen.long .note{max-height:48dvh}
+  .screen.long .note p{font-size:.98rem;line-height:1.5}
+
+  .nav{display:flex;align-items:center;justify-content:center;gap:18px;min-height:52px}
+  .back{
+    font-family:var(--hand);font-size:1.1rem;color:var(--ink-soft);background:none;border:0;cursor:pointer;
+    padding:8px 6px;text-decoration:underline dashed;text-underline-offset:4px;touch-action:manipulation;
+  }
+  .back[hidden]{display:none}
+  .bar{width:min(300px,70%);height:10px;border:2px solid var(--ink);border-radius:var(--wobble);background:var(--card);overflow:hidden}
+  .bar i{display:block;height:100%;width:0;background:var(--pink);border-right:2px solid var(--ink);transition:width .5s ease}
+
+  /* music toggle */
+  .music-btn{
+    position:fixed;top:14px;right:14px;z-index:6;width:46px;height:46px;padding:0;display:grid;place-items:center;
+    color:var(--ink);background:var(--card);border:2px solid var(--ink);border-radius:var(--wobble);
+    box-shadow:3px 3px 0 var(--pink);cursor:pointer;touch-action:manipulation;
+  }
+  .music-btn svg{width:22px;height:22px}
+  .music-btn .off{display:none}
+  .music-btn[aria-pressed="false"] .on{display:none}
+  .music-btn[aria-pressed="false"] .off{display:block}
+  .music-btn[aria-pressed="false"]{color:var(--ink-soft);box-shadow:3px 3px 0 var(--paper-2)}
+  .music-btn:focus-visible{outline:3px dashed var(--pink-deep);outline-offset:3px}
+
+  /* ---------- finale ---------- */
+  .chars{display:flex;justify-content:center;align-items:flex-end;gap:clamp(4px,3vw,28px)}
+  .chars img{width:clamp(120px,28vw,190px);height:auto;filter:drop-shadow(0 10px 12px rgba(90,50,60,.18));animation:bob 4.5s ease-in-out infinite}
+  .chars img + img{animation-delay:-2.2s}
+  .finale h2{font-size:clamp(2.2rem,9vw,3.8rem);line-height:1.1}
+  .finale p{margin:0;max-width:30ch;font-family:var(--hand);font-size:1.7rem;color:var(--ink)}
+  .sig{font-family:var(--hand);font-size:1.5rem;color:var(--pink-deep)}
+
+  .burst{position:fixed;inset:0;pointer-events:none;overflow:hidden;z-index:50}
+  .burst .h{position:absolute;bottom:-40px;animation:rise 3s ease-out forwards}
+  .burst .h svg{width:100%;height:100%;overflow:visible}
+  @keyframes rise{to{transform:translateY(-115vh) rotate(40deg);opacity:0}}
+
+  @media (max-height:700px){ .stage{height:min(34dvh,440px)} .note{max-height:36dvh} .note p{font-size:1rem} }
+  @media (prefers-reduced-motion:reduce){
+    .heart,.envelope,.ping,.chars img,.burst .h{animation:none}
+    .music-btn{transition:none}
+    .screen,.frame,.note,.bar i{transition:opacity .2s}
+  }
+</style>
+</head>
+<body>
+<div class="grain" aria-hidden="true"></div>
+
+<!-- 1. the new message -->
+<main class="screen cover" id="cover">
+  <div class="hearts" aria-hidden="true" id="coverHearts"></div>
+  <div class="envelope" aria-hidden="true">
+    <svg viewBox="0 0 96 68" fill="none" stroke="#4A3A36" stroke-width="3" stroke-linejoin="round" stroke-linecap="round">
+      <rect x="3" y="8" width="90" height="56" rx="6" fill="#FFFDFA"/>
+      <path d="M5 12l43 30 43-30" fill="#FBD6DF"/>
+      <path transform="translate(33 23) scale(1.2)" d="M12 21s-7-4.6-9.3-9C.8 7.6 3 4 6.4 4c2 0 3.4 1.1 4.6 2.6C12.2 5.1 13.6 4 15.6 4 19 4 21.2 7.6 21.3 12 19 16.4 12 21 12 21z" fill="#D9607E" stroke-width="1.6"/>
+    </svg>
+    <span class="ping">1</span>
+  </div>
+  <h1>Hey Glory,<br>you have obtained a new message.</h1>
+  <p class="sub">it's from someone who thinks of you a lot</p>
+  <button class="sketch-btn" id="openBtn">Open</button>
+</main>
+
+<!-- 2. the message, page by page -->
+<section class="screen gone" id="player">
+  <div class="hearts" aria-hidden="true" id="playHearts"></div>
+  <div class="stage" id="stage"></div>
+  <div class="note" id="note" aria-live="polite"><p id="noteText"></p></div>
+  <div class="nav">
+    <button class="back" id="backBtn" hidden>back</button>
+    <button class="sketch-btn" id="nextBtn">next</button>
+  </div>
+  <div class="bar" id="bar" role="progressbar" aria-label="Message progress" aria-valuemin="0" aria-valuemax="100"><i id="barFill"></i></div>
+</section>
+
+<!-- 3. the end -->
+<section class="screen finale gone" id="finale">
+  <div class="hearts" aria-hidden="true" id="endHearts"></div>
+  <div class="chars" aria-hidden="true">
+    <img src="img/rohan-last.png" alt="">
+    <img src="img/glory-last.png" alt="">
+  </div>
+  <h2>Happy 21st Birthday, Glory!</h2>
+  <p>I love you so much!</p>
+  <span class="sig">with all my heart, Rohan</span>
+  <button class="sketch-btn blue" id="replayBtn">read it again</button>
+</section>
+
+<audio id="bgm" loop preload="auto" src="bgm.mp3"></audio>
+<button class="music-btn" id="musicBtn" hidden aria-pressed="true" aria-label="Music on — tap to mute">
+  <svg class="on" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 18V6l10-2v12"/><circle cx="6.5" cy="18" r="2.5"/><circle cx="16.5" cy="16" r="2.5"/></svg>
+  <svg class="off" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 18V6l10-2v12"/><circle cx="6.5" cy="18" r="2.5"/><circle cx="16.5" cy="16" r="2.5"/><path d="M3 3l18 18"/></svg>
+</button>
+
+<div class="burst" id="burst" aria-hidden="true"></div>
+
+<script>
+/* ============================================================
+   EDIT HERE.  One entry = one page: a picture from img/ plus its text.
+   The "next" button moves to the next page; after the last page comes the birthday screen.
+   Several pages can share one picture (the picture stays, only the text changes).
+   big:true  shows short text larger, in the handwritten font.
+   ============================================================ */
+var PAGES = [
+  { img:'01-cake.jpg', big:true, text:
+    "Happy 21st Birthday Glory!\nCiee yang finally getting legal in lots of things." },
+
+  { img:'02-book.jpg', text:
+    "So, Welcome to the 21st chapter of your life!\nI only have one wish for you, which is you to be in a happy trend, from now on, until forever." },
+
+  { img:'03-path.jpg', text:
+    "Let me explain what it means by happy trend okay. during your life, especially starting from 21, you will face lots of new things, lots of new challenges, and the progress wont be easy." },
+
+  { img:'04-desk.jpg', text:
+    "Even now you have HSK, you have Thesis, you have Infokom, and I can say this is only the start." },
+
+  { img:'05-grad.jpg', text:
+    "Later, you will have entrance exam for language, interview for works, maybe preparation for Masters, lots of works project, and so on." },
+
+  { img:'06-map.jpg', text:
+    "You know what, all of this is too much to process at the same time. Thats why my suggestion is that you create your life road map, and focus on each objective one by one." },
+
+  { img:'07-stairs.jpg', text:
+    "And, life is not always on our side you know. There will be time where you succeed, and there will be time when you fail. When you stumbled and dont know what to do next.\n\nMy sincere wish is, you stumble enough for you to stand up again, and achieve your better self in every chapter of your life. Yup, human need to fail, because only then they can experience success, and happiness come from every single success you get in every problem you have." },
+
+  { img:'02-book.jpg', text:
+    "Thats why, my only wish is you have a happy trend life, some times you might fall down, but you will always get back and reach a new high." },
+
+  { img:'08-phone.jpg', text:
+    "Thats my wish Glory. I wish u to cherish every moment, and always happy, and always remember that in every milestone, every problem, every challenges you face, i will always be right there, just waiting for your call." }
+];
+/* ============================================================ */
+
+(function(){
+  var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var $ = function(id){ return document.getElementById(id); };
+  var cover = $('cover'), player = $('player'), finale = $('finale');
+  var stage = $('stage'), note = $('note'), noteText = $('noteText');
+  var nextBtn = $('nextBtn'), backBtn = $('backBtn'), barFill = $('barFill'), bar = $('bar');
+  var HEART = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s-7-4.6-9.3-9C.8 7.6 3 4 6.4 4c2 0 3.4 1.1 4.6 2.6C12.2 5.1 13.6 4 15.6 4 19 4 21.2 7.6 21.3 12 19 16.4 12 21 12 21z" fill="currentColor" stroke="#4A3A36" stroke-width="1.1" stroke-linejoin="round"/></svg>';
+
+  /* drifting hearts on each screen */
+  ['coverHearts','playHearts','endHearts'].forEach(function(id){
+    var box = $(id), spots = [[10,16,22],[82,20,18],[70,80,20],[18,74,16],[6,50,30],[90,56,26],[32,8,24],[62,6,20]];
+    spots.forEach(function(s, i){
+      var h = document.createElement('span');
+      h.className = 'heart ' + (i % 2 ? 'blue' : 'pink');
+      h.style.cssText = 'left:'+s[0]+'%;top:'+s[1]+'%;width:'+s[2]+'px;height:'+s[2]+'px;animation-delay:-'+(i*1.3)+'s';
+      h.innerHTML = HEART;
+      box.appendChild(h);
+    });
+  });
+
+  /* preload every picture so a page turn never shows a blank frame */
+  PAGES.forEach(function(p){ var im = new Image(); im.src = 'img/' + p.img; });
+
+  var index = -1, shownImg = null, currentFrame = null, flips = 0, ended = false, lock = false;
+
+  function showPicture(src){
+    if (src === shownImg) return;           /* same picture on consecutive pages: keep it */
+    var old = currentFrame;
+    if (old) { old.classList.remove('on'); old.classList.add('out'); setTimeout(function(){ old.remove(); }, 1000); }
+    var f = document.createElement('div');
+    f.className = 'frame' + (flips++ % 2 ? ' alt' : '');
+    var img = document.createElement('img');
+    img.src = 'img/' + src; img.alt = '';
+    f.appendChild(img);
+    stage.appendChild(f);
+    void f.offsetWidth;                       /* commit the hidden state so the fade-in runs */
+    f.classList.add('on');
+    currentFrame = f;
+    shownImg = src;
+  }
+
+  function showPage(i){
+    index = i;
+    var p = PAGES[i];
+    showPicture(p.img);
+    var first = !noteText.textContent;
+    var apply = function(){
+      noteText.textContent = p.text;
+      note.classList.toggle('big', !!p.big);
+      player.classList.toggle('long', p.text.length > 330);
+      note.scrollTop = 0;
+      note.classList.remove('swap');
+    };
+    if (first || reduce) apply(); else { note.classList.add('swap'); setTimeout(apply, 260); }
+    backBtn.hidden = i === 0;
+    nextBtn.textContent = i === PAGES.length - 1 ? 'one more thing' : 'next';
+    var pct = ((i + 1) / PAGES.length) * 100;
+    barFill.style.width = pct + '%';
+    bar.setAttribute('aria-valuenow', Math.round(pct));
+  }
+
+  function begin(){
+    ended = false; shownImg = null; currentFrame = null; flips = 0; noteText.textContent = ''; stage.innerHTML = '';
+    cover.classList.add('gone'); finale.classList.add('gone'); player.classList.remove('gone');
+    showPage(0);
+  }
+  function finish(){
+    ended = true;
+    player.classList.add('gone');
+    finale.classList.remove('gone');
+    confetti();
+  }
+  function go(step){
+    if (ended || lock) return;
+    var n = index + step;
+    if (n < 0) return;
+    lock = true; setTimeout(function(){ lock = false; }, 350);   /* ignore accidental double taps */
+    if (n >= PAGES.length) finish(); else showPage(n);
+  }
+  nextBtn.addEventListener('click', function(){ go(1); });
+  backBtn.addEventListener('click', function(){ go(-1); });
+  document.addEventListener('keydown', function(e){
+    if (player.classList.contains('gone')) return;
+    if (e.key === 'ArrowRight') go(1);
+    else if (e.key === 'ArrowLeft') go(-1);
+  });
+
+  function confetti(){
+    if (reduce) return;
+    var burst = $('burst');
+    for (var i = 0; i < 34; i++) {
+      var h = document.createElement('span');
+      h.className = 'h';
+      var s = 16 + Math.random() * 24;
+      h.style.cssText = 'left:'+(Math.random()*100)+'%;width:'+s+'px;height:'+s+'px;animation-delay:'+(Math.random()*1.2)+'s;animation-duration:'+(2.4+Math.random()*1.6)+'s;color:'+(Math.random()<.6?'#F6A9BC':'#8FB8F0');
+      h.innerHTML = HEART;
+      burst.appendChild(h);
+    }
+    setTimeout(function(){ burst.innerHTML = ''; }, 5200);
+  }
+
+  /* background music: starts on the "yes, open it" tap (a real user gesture), fades in, loops.
+     If the phone refuses to play, the button shows the "off" state so one tap starts it. */
+  var bgm = $('bgm'), musicBtn = $('musicBtn'), TARGET_VOL = 0.45, fadeTimer = null;
+  function fadeTo(target, ms){
+    clearInterval(fadeTimer);
+    var from = bgm.volume, start = Date.now();
+    fadeTimer = setInterval(function(){
+      var t = Math.min(1, (Date.now() - start) / ms);
+      try { bgm.volume = from + (target - from) * t; } catch (e) {}
+      if (t >= 1) clearInterval(fadeTimer);
+    }, 50);
+  }
+  function setMusicUI(on){
+    musicBtn.hidden = false;
+    musicBtn.setAttribute('aria-pressed', on ? 'true' : 'false');
+    musicBtn.setAttribute('aria-label', on ? 'Music on — tap to mute' : 'Music off — tap to play');
+  }
+  var musicWanted = false;
+  function reallyPlaying(){ return !bgm.paused && !bgm.ended && bgm.currentTime > 0.05; }
+  function tryPlay(){
+    try { if (bgm.volume < 0.05) bgm.volume = 0.05; } catch (e) {}
+    var p = bgm.play();
+    if (p && p.catch) p.catch(function(){});
+  }
+  try { bgm.load(); } catch (e) {}          /* warm up decoding early */
+  function startMusic(){
+    musicWanted = true;
+    tryPlay();                              /* synchronous, inside the tap handler */
+    var attempts = 0;
+    (function check(){
+      if (!musicWanted) return;
+      if (reallyPlaying()) { setMusicUI(true); fadeTo(TARGET_VOL, 2500); return; }
+      if (attempts++ < 6) { tryPlay(); setTimeout(check, 500); }
+      else setMusicUI(false);               /* honest state: one tap on the button starts it */
+    })();
+  }
+  bgm.addEventListener('playing', function(){
+    if (musicWanted && musicBtn.getAttribute('aria-pressed') !== 'true') { setMusicUI(true); fadeTo(TARGET_VOL, 1500); }
+  });
+  musicBtn.addEventListener('click', function(){
+    if (bgm.paused) {
+      musicWanted = true;
+      tryPlay();
+      setTimeout(function(){ if (reallyPlaying()) { setMusicUI(true); fadeTo(TARGET_VOL, 1200); } }, 300);
+    } else {
+      musicWanted = false;
+      fadeTo(0, 500);
+      setTimeout(function(){ bgm.pause(); }, 520);
+      setMusicUI(false);
+    }
+  });
+
+  $('openBtn').addEventListener('click', function(){ startMusic(); begin(); });
+  $('replayBtn').addEventListener('click', begin);
+})();
+</script>
+</body>
+</html>
