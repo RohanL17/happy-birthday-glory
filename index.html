@@ -112,14 +112,15 @@
     transition:opacity .45s ease,transform .45s ease;
   }
   .note.swap{opacity:0;transform:translateY(8px)}
-  .note p{margin:0;white-space:pre-line;font-size:1.04rem;line-height:1.6;text-align:left}
-  .note.big p{font-family:var(--hand);font-size:1.5rem;line-height:1.4;text-align:center;color:var(--ink)}
+  /* every page uses the same handwritten font and centered layout; only the size steps down for longer text */
+  .note p{margin:0;white-space:pre-line;font-family:var(--hand);font-size:1.2rem;line-height:1.45;text-align:center;color:var(--ink)}
+  .note.big p{font-size:1.5rem;line-height:1.4}
   .note.big{padding:20px 24px}
 
   /* long pages: smaller picture, taller text box, so nothing needs scrolling */
   .screen.long .stage{height:min(27dvh,360px)}
   .screen.long .note{max-height:48dvh}
-  .screen.long .note p{font-size:.98rem;line-height:1.5}
+  .screen.long .note p{font-size:1rem;line-height:1.4}
 
   .nav{display:flex;align-items:center;justify-content:center;gap:18px;min-height:52px}
   .back{
@@ -156,7 +157,8 @@
   .burst .h svg{width:100%;height:100%;overflow:visible}
   @keyframes rise{to{transform:translateY(-115vh) rotate(40deg);opacity:0}}
 
-  @media (max-height:700px){ .stage{height:min(34dvh,440px)} .note{max-height:36dvh} .note p{font-size:1rem} }
+  @media (max-height:700px){ .stage{height:min(34dvh,440px)} .note{max-height:36dvh} .note p{font-size:1.1rem} .note.big p{font-size:1.35rem}
+    .screen.long .stage{height:min(20dvh,360px)} .screen.long .note{max-height:56dvh} }
   @media (prefers-reduced-motion:reduce){
     .heart,.envelope,.ping,.chars img,.burst .h{animation:none}
     .music-btn{transition:none}
